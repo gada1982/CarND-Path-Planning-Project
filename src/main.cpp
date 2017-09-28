@@ -35,10 +35,13 @@ string hasData(string s) {
   return "";
 }
 
+// Calculate the euclidean distance between two points
 double distance(double x1, double y1, double x2, double y2)
 {
 	return sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 }
+
+// Get the closest waypoint of the track (could be behind or in a bad direction)
 int ClosestWaypoint(double x, double y, const vector<double> &maps_x, const vector<double> &maps_y)
 {
 
@@ -62,6 +65,7 @@ int ClosestWaypoint(double x, double y, const vector<double> &maps_x, const vect
 
 }
 
+// Get the next waypoint of the track
 int NextWaypoint(double x, double y, double theta, const vector<double> &maps_x, const vector<double> &maps_y)
 {
 
