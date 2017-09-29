@@ -201,9 +201,13 @@ int main() {
   	map_waypoints_dy.push_back(d_y);
   }
   
+  // Start in lane 1
+  int lane = 1;
   
+  // Reference velocity (mph)
+  double ref_vel = 0.0;
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&ref_vel, &map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy, &lane](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -270,11 +274,53 @@ int main() {
       bool followSpline1 = true;
       if(followSpline1)
       {
-        // Start in lane 1
-        int lane = 1;
         
-        // Reference velocity (mph)
-        double ref_vel = 49.5;
+        
+        // Start Sensor Fusion Part
+        if(prev_size > 0)
+        {
+          car_s = end_path_s;
+        }
+        
+        bool too_close = false;
+        
+        // Find rev_v to use
+        for(int i = 0; i < sensor_fusion.size(); i++)
+        {
+          // Is a car in my lane?
+          float d = sensor_fusion[i][6];
+          // Not off the road
+          if(d < (2+4*lane+2) && d > (2+4*lane-2)) // TODO - Is a car in my lane
+          {
+            double vx = sensor_fusion[i][3];
+            double vy = sensor_fusion[i][4];
+            double check_speed = sqrt(pow(vx,2) + pow(vy,2));
+            double check_car_s = sensor_fusion[i][5];
+            
+            check_car_s += (double)prev_size*0.02*check_speed;
+            // Check if s values are greater than mine and s gap
+            if((check_car_s > car_s) && ((check_car_s - car_s) < 30))
+            {
+              // TODO do something more sophisticated
+              too_close = true;
+            }
+          }
+        }
+        
+        if(too_close)
+        {
+          ref_vel -= 0.224; // TODO
+        }
+        else if(ref_vel < 49.5)
+        {
+          ref_vel += 0.224;
+        }
+        
+        
+        
+        
+        
+        // End Sensor Fusion Part
         
         vector<double> ptsx;
         vector<double> ptsy;
