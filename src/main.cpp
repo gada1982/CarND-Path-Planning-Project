@@ -303,10 +303,16 @@ int main() {
             {
               // TODO do something more sophisticated
               too_close = true;
+              
+              if(lane > 0)
+              {
+                lane = 0;
+              }
             }
           }
         }
         
+        // TODO optimise -> Video bei ca. 51:00
         if(too_close)
         {
           ref_vel -= 0.224; // TODO
