@@ -29,8 +29,8 @@ private:
   double end_path_s;
   double end_path_d;
   
-  int car_lane;
-  double car_ref_vel = 0.0;
+  int lane;
+  double ref_vel = 0.0;
   
 public:
   PathPlanner(
