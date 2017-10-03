@@ -55,7 +55,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   // Start Sensor Fusion Part
   if(prev_size > 0)
   {
-    this->car_s = this->end_path_s;
+    car_s = end_path_s;
   }
   
   bool too_close = false;
@@ -101,112 +101,121 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
     ref_vel += MAX_ACCEL;
   }
   
-  
-    
-  vector<double> ptsx;
-  vector<double> ptsy;
-  
-  // Reference state (x, y, yaw)
-  double ref_x = car_x;
-  double ref_y = car_y;
-  double ref_yaw = deg2rad(car_yaw);
-  
-  // For small pref_size use car as starting point
-  if(prev_size < 2)
-  {
-    // Usage of two points to get a tangent for the car
-    double prev_car_x = car_x - cos(car_yaw);
-    double prev_car_y = car_y - sin(car_yaw);
-    
-    ptsx.push_back(prev_car_x);
-    ptsx.push_back(car_x);
-    
-    ptsy.push_back(prev_car_y);
-    ptsy.push_back(car_y);
-  }
-  // Previous path exists -> use it
-  else
-  {
-    ref_x = previous_path_x[prev_size - 1];
-    ref_y = previous_path_y[prev_size - 1];
-    
-    double ref_x_prev = previous_path_x[prev_size - 2];
-    double ref_y_prev = previous_path_y[prev_size - 2];
-    ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
-    
-    // Usage of two points to get a tangent for the car
-    ptsx.push_back(ref_x_prev);
-    ptsx.push_back(ref_x);
-    
-    ptsy.push_back(ref_y_prev);
-    ptsy.push_back(ref_y);
-  }
-  
-  // Add evenly 30m spaced points ahead of the starting reference
-  vector<double> next_wp0 = getXY(car_s + 30, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp1 = getXY(car_s + 60, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  vector<double> next_wp2 = getXY(car_s + 90, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
-  
-  ptsx.push_back(next_wp0[0]);
-  ptsx.push_back(next_wp1[0]);
-  ptsx.push_back(next_wp2[0]);
-  
-  ptsy.push_back(next_wp0[1]);
-  ptsy.push_back(next_wp1[1]);
-  ptsy.push_back(next_wp2[1]);
-  
-  for(int i = 0; i < ptsx.size(); i++)
-  {
-    // Shift car reference angle to 0 degree
-    double shift_x = ptsx[i] - ref_x;
-    double shift_y = ptsy[i] - ref_y;
-    
-    ptsx[i] = shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw);
-    ptsy[i] = shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw);
-  }
-  
-  // Create a spline to follow
-  tk::spline s;
-  
-  // Set (x,y) points to the spline
-  s.set_points(ptsx, ptsy);
-  
-  // Start with all the prev path points
-  for(int i = 0; i < previous_path_x.size(); i++)
-  {
-    new_path.push_back(previous_path_x[i]);
-    new_path.push_back(previous_path_y[i]);
-  }
-  
-  // Calculate spline
-  double target_x = 30.0;
-  double target_y = s(target_x);
-  double target_dist = sqrt(pow(target_x, 2) + pow(target_y, 2));
-  
-  double x_add_on = 0;
-  
-  // Fill up the rest
-  for(int i = 1; i <= 50 - previous_path_x.size(); i++)
-  {
-    double N = target_dist / (0.02 * ref_vel/2.24); // mph->m/s
-    double x_point = x_add_on + target_x/N;
-    double y_point = s(x_point);
-    
-    x_add_on  = x_point;
-    
-    double x_ref = x_point;
-    double y_ref = y_point;
-    
-    // Rotate back
-    x_point = x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw);
-    y_point = x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw);
-    
-    x_point += ref_x;
-    y_point += ref_y;
-    
-    new_path.push_back(x_point);
-    new_path.push_back(y_point);
-  }
+  new_path = GenerateNextPath(prev_size);
   
   return new_path;
+  
+}
+  
+  // TODO
+  vector<double> PathPlanner::GenerateNextPath(int prev_size)
+  {
+    vector<double> new_path;
+    
+    vector<double> ptsx;
+    vector<double> ptsy;
+  
+    // Reference state (x, y, yaw)
+    double ref_x = car_x;
+    double ref_y = car_y;
+    double ref_yaw = deg2rad(car_yaw);
+  
+    // For small pref_size use car as starting point
+    if(prev_size < 2)
+    {
+      // Usage of two points to get a tangent for the car
+      double prev_car_x = car_x - cos(car_yaw);
+      double prev_car_y = car_y - sin(car_yaw);
+      
+      ptsx.push_back(prev_car_x);
+      ptsx.push_back(car_x);
+      
+      ptsy.push_back(prev_car_y);
+      ptsy.push_back(car_y);
+    }
+    // Previous path exists -> use it
+    else
+    {
+      ref_x = previous_path_x[prev_size - 1];
+      ref_y = previous_path_y[prev_size - 1];
+      
+      double ref_x_prev = previous_path_x[prev_size - 2];
+      double ref_y_prev = previous_path_y[prev_size - 2];
+      ref_yaw = atan2(ref_y - ref_y_prev, ref_x - ref_x_prev);
+      
+      // Usage of two points to get a tangent for the car
+      ptsx.push_back(ref_x_prev);
+      ptsx.push_back(ref_x);
+      
+      ptsy.push_back(ref_y_prev);
+      ptsy.push_back(ref_y);
+    }
+  
+    // Add evenly 30m spaced points ahead of the starting reference
+    vector<double> next_wp0 = getXY(car_s + 30, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+    vector<double> next_wp1 = getXY(car_s + 60, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+    vector<double> next_wp2 = getXY(car_s + 90, (2 + 4*lane), map_waypoints_s, map_waypoints_x, map_waypoints_y);
+  
+    ptsx.push_back(next_wp0[0]);
+    ptsx.push_back(next_wp1[0]);
+    ptsx.push_back(next_wp2[0]);
+  
+    ptsy.push_back(next_wp0[1]);
+    ptsy.push_back(next_wp1[1]);
+    ptsy.push_back(next_wp2[1]);
+  
+    for(int i = 0; i < ptsx.size(); i++)
+    {
+      // Shift car reference angle to 0 degree
+      double shift_x = ptsx[i] - ref_x;
+      double shift_y = ptsy[i] - ref_y;
+      
+      ptsx[i] = shift_x * cos(0 - ref_yaw) - shift_y * sin(0 - ref_yaw);
+      ptsy[i] = shift_x * sin(0 - ref_yaw) + shift_y * cos(0 - ref_yaw);
+    }
+  
+    // Create a spline to follow
+    tk::spline s;
+  
+    // Set (x,y) points to the spline
+    s.set_points(ptsx, ptsy);
+  
+    // Start with all the prev path points
+    for(int i = 0; i < previous_path_x.size(); i++)
+    {
+      new_path.push_back(previous_path_x[i]);
+      new_path.push_back(previous_path_y[i]);
+    }
+  
+    // Calculate spline
+    double target_x = 30.0;
+    double target_y = s(target_x);
+    double target_dist = sqrt(pow(target_x, 2) + pow(target_y, 2));
+  
+    double x_add_on = 0;
+  
+    // Fill up the rest
+    for(int i = 1; i <= 50 - previous_path_x.size(); i++)
+    {
+      double N = target_dist / (0.02 * ref_vel/2.24); // mph->m/s
+      double x_point = x_add_on + target_x/N;
+      double y_point = s(x_point);
+      
+      x_add_on  = x_point;
+      
+      double x_ref = x_point;
+      double y_ref = y_point;
+      
+      // Rotate back
+      x_point = x_ref * cos(ref_yaw) - y_ref * sin(ref_yaw);
+      y_point = x_ref * sin(ref_yaw) + y_ref * cos(ref_yaw);
+      
+      x_point += ref_x;
+      y_point += ref_y;
+      
+      new_path.push_back(x_point);
+      new_path.push_back(y_point);
+    }
+
+    return new_path;
 }

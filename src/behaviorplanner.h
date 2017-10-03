@@ -42,16 +42,14 @@ public:
   
   virtual ~PathPlanner();
   
-  // TODO
+  // Solve for the path plan, given a bunch of information about the car and enviroment
+  // Returns the path
   vector<double> SolvePath(vector<double> car_data,
                        vector<vector<double>> sensor_fusion,
                        vector<double> previous_path_x,
                        vector<double> previous_path_y,
                        double end_path_s,
                        double end_path_d);
-  
-  // Generates the next path
-  vector<double> GenerateNextPath(int prev_size);
 };
 
 #endif /* PATHPLANNER_H */
