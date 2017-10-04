@@ -32,6 +32,7 @@ private:
   
   int lane;
   double ref_vel = 0.0;
+  bool CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size);
   
 public:
   PathPlanner(

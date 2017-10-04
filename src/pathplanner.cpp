@@ -28,6 +28,42 @@ PathPlanner::PathPlanner(vector<double> map_waypoints_x, vector<double> map_wayp
 
 PathPlanner::~PathPlanner() {}
 
+bool PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size)
+{
+  bool too_close = false;
+  bool debug = true;
+  // Find rev_v to use
+  for(int i = 0; i < sensor_fusion.size(); i++)
+  {
+    // Is a car in my lane?
+    float d = sensor_fusion[i][6];
+    
+    // Check if there is a car in my lane, which is to close
+    // Change lane if possible
+    // If not, brake
+    if(d <= (2+4*lane+2) && d >= (2+4*lane-2))
+    {
+      double vx = sensor_fusion[i][3];
+      double vy = sensor_fusion[i][4];
+      double check_speed = sqrt(pow(vx,2) + pow(vy,2));
+      double check_car_s = sensor_fusion[i][5];
+      
+      check_car_s += (double)prev_size*0.02*check_speed;
+      // Check if s values are greater than mine and s gap
+      if((check_car_s > car_s) && ((check_car_s - car_s) < 20))
+      {
+        // TODO do something more sophisticated
+        too_close = true;
+        if(debug && count > 20)
+        {
+          cout << "\nToo close to vehicle in front!";
+        }
+      }
+    }
+  }
+  return too_close;
+}
+        
 vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<double>> sensor_fusion,
                          vector<double> previous_path_x, vector<double> previous_path_y, double end_path_s, double end_path_d)
 {
@@ -69,38 +105,12 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   }
   
   bool too_close = false;
+  
+  // Check if actual Lane is free
+  too_close = CheckActualLane(sensor_fusion, prev_size);
+  
+  
   float d;
-  
-  // Find rev_v to use
-  for(int i = 0; i < sensor_fusion.size(); i++)
-  {
-    // Is a car in my lane?
-    d = sensor_fusion[i][6];
-    
-    // Check if there is a car in my lane, which is to close
-    // Change lane if possible
-    // If not, brake
-    if(d <= (2+4*lane+2) && d >= (2+4*lane-2))
-    {
-      double vx = sensor_fusion[i][3];
-      double vy = sensor_fusion[i][4];
-      double check_speed = sqrt(pow(vx,2) + pow(vy,2));
-      double check_car_s = sensor_fusion[i][5];
-      
-      check_car_s += (double)prev_size*0.02*check_speed;
-      // Check if s values are greater than mine and s gap
-      if((check_car_s > car_s) && ((check_car_s - car_s) < 20))
-      {
-        // TODO do something more sophisticated
-        too_close = true;
-        if(debug && count > 20)
-        {
-          cout << "\nToo close to vehicle in front!";
-        }
-      }
-    }
-  }
-  
   bool lane_0_free = true;
   bool lane_1_free = true;
   bool lane_2_free = true;
