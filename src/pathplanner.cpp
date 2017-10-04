@@ -59,7 +59,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   if(debug && count > 50)
   {
     count = 0;
-    cout << "\ncar_s: " << car_s;
+    cout << "\nCar_s: " << car_s;
   }
   
   // Start Sensor Fusion Part
@@ -95,7 +95,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
         too_close = true;
         if(debug && count > 20)
         {
-          cout << "\ntoo close";
+          cout << "\nToo close to vehicle in front!";
         }
       }
     }
@@ -129,7 +129,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
           lane_0_free = false;
           if(debug && count > 20)
           {
-            cout << "\nlane 0 occupied";
+            cout << "\nLane 0 is not free!";
           }
         }
         // Lane 1 not free
@@ -138,7 +138,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
           lane_1_free = false;
           if(debug && count > 20)
           {
-            cout << "\nlane 1 occupied";
+            cout << "\nLane 1 is not free!";
           }
         }
         // Lane 2 not free
@@ -147,7 +147,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
           lane_2_free = false;
           if(debug && count > 20)
           {
-            cout << "\nlane 2 occupied";
+            cout << "\nLane 2 is not free!";
           }
         }
       }
@@ -167,7 +167,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
         do_lane_change = true;
         if(debug && count > 20)
         {
-          cout << "\nDo lane change to 1";
+          cout << "\nChange to lane 1!";
         }
       }
       else if(lane == 1)
@@ -178,7 +178,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
           do_lane_change = true;
           if(debug && count > 20)
           {
-            cout << "\nDo lane change to 0";
+            cout << "\nChange to lane 0!";
           }
         }
         else if(lane_2_free)
@@ -187,7 +187,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
           do_lane_change = true;
           if(debug && count > 20)
           {
-            cout << "\nDo lane change to 2";
+            cout << "\nChange to lane 2!";
           }
         }
       }
@@ -196,14 +196,13 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   
   // End Sensor Fusion Part
     
-  // TODO optimise -> Video bei ca. 51:00
+  // Adjust velocity
   if(too_close)
   {
     ref_vel -= MAX_ACCEL; // TODO
   }
   else if(ref_vel < SPEED_LIMIT)
   {
-    //ref_vel += MAX_ACCEL;
     ref_vel += MAX_ACCEL;
   }
   
