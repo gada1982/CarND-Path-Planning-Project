@@ -59,14 +59,21 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   }
   
   bool too_close = false;
+  bool brake = false;
+  bool lane_0_free = true;
+  bool lane_1_free = true;
+  bool lane_2_free = true;
   
   // Find rev_v to use
   for(int i = 0; i < sensor_fusion.size(); i++)
   {
     // Is a car in my lane?
     float d = sensor_fusion[i][6];
-    // Not off the road
-    if(d < (2+4*lane+2) && d > (2+4*lane-2)) // TODO - Is a car in my lane
+    
+    // Check if there is a car in my lane, which is to close
+    // Change lane if possible
+    // If not, brake
+    if(d <= (2+4*lane+2) && d >= (2+4*lane-2))
     {
       double vx = sensor_fusion[i][3];
       double vy = sensor_fusion[i][4];
@@ -79,19 +86,71 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
       {
         // TODO do something more sophisticated
         too_close = true;
-        
-        if(lane > 0)
+      }
+    }
+    
+    // If there is a car too close in the own lane -> Check if an other lane is free
+    if(too_close)
+    {
+      double vx = sensor_fusion[i][3];
+      double vy = sensor_fusion[i][4];
+      double check_speed = sqrt(pow(vx,2) + pow(vy,2));
+      double check_car_s = sensor_fusion[i][5];
+      
+      check_car_s += (double)prev_size*0.02*check_speed;
+      // Check if s values are greater than mine and s gap
+      if(abs(car_s - check_car_s) < 30)
+      {
+        // Lane 0 not free
+        if(d > 0 && d < 4)
         {
-          lane = 0;
+          lane_0_free = false;
+        }
+        // Lane 1 not free
+        else if(d >= 4 && d <= 8)
+        {
+          lane_1_free = false;
+        }
+        // Lane 2 not free
+        else
+        {
+          lane_2_free = false;
         }
       }
+    }
+  }
+  
+  // Decide if lanechange is possible and if yes to which lane
+  if(too_close)
+  {
+    int old_lane = lane;
+    if((lane == 0 && lane_1_free) || (lane == 0 && lane_1_free))
+    {
+      lane = 1;
+    }
+    else if(lane == 1)
+    {
+      if(lane_0_free)
+        lane = 0;
+      else if(lane_2_free)
+        lane = 2;
+    }
+    
+    // Lane change is not possible -> brake
+    if(old_lane == lane)
+    {
+      brake = true;
+    }
+    else
+    {
+      brake = false;
     }
   }
   
   // End Sensor Fusion Part
     
   // TODO optimise -> Video bei ca. 51:00
-  if(too_close)
+  if(too_close && brake)
   {
     ref_vel -= MAX_ACCEL; // TODO
   }
