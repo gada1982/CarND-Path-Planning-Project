@@ -22,6 +22,7 @@ private:
   double car_d;
   double car_yaw;
   double car_speed;
+  int count;
   
   vector<vector<double>> sensor_fusion;
   vector<double> previous_path_x;

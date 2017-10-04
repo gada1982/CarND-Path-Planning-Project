@@ -23,6 +23,7 @@ PathPlanner::PathPlanner(vector<double> map_waypoints_x, vector<double> map_wayp
   
   // Start in lane 1
   lane = 1;
+  count = 0;
 }
 
 PathPlanner::~PathPlanner() {}
@@ -30,6 +31,8 @@ PathPlanner::~PathPlanner() {}
 vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<double>> sensor_fusion,
                          vector<double> previous_path_x, vector<double> previous_path_y, double end_path_s, double end_path_d)
 {
+  bool debug = true;
+  
   car_x = car_data[0];
   car_y = car_data[1];
   car_s = car_data[2];
@@ -45,12 +48,19 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   
   //impacts default behavior for most states
   float SPEED_LIMIT = 49.5;
-  float MAX_ACCEL = 0.224;
+  float MAX_ACCEL = 0.35;
   
   vector<double> new_path;
   
   // Size of the previous path
   int prev_size = previous_path_x.size();
+  
+  count += 1;
+  if(debug && count > 50)
+  {
+    count = 0;
+    cout << "\ncar_s: " << car_s << " end_path_s: " << end_path_s;
+  }
   
   // Start Sensor Fusion Part
   if(prev_size > 0)
@@ -59,16 +69,13 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   }
   
   bool too_close = false;
-  bool brake = false;
-  bool lane_0_free = true;
-  bool lane_1_free = true;
-  bool lane_2_free = true;
+  float d;
   
   // Find rev_v to use
   for(int i = 0; i < sensor_fusion.size(); i++)
   {
     // Is a car in my lane?
-    float d = sensor_fusion[i][6];
+    d = sensor_fusion[i][6];
     
     // Check if there is a car in my lane, which is to close
     // Change lane if possible
@@ -82,16 +89,31 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
       
       check_car_s += (double)prev_size*0.02*check_speed;
       // Check if s values are greater than mine and s gap
-      if((check_car_s > car_s) && ((check_car_s - car_s) < 30))
+      if((check_car_s > car_s) && ((check_car_s - car_s) < 25))
       {
         // TODO do something more sophisticated
         too_close = true;
+        if(debug && count > 20)
+        {
+          cout << "\ntoo close";
+        }
       }
     }
-    
-    // If there is a car too close in the own lane -> Check if an other lane is free
-    if(too_close)
+  }
+  
+  bool lane_0_free = true;
+  bool lane_1_free = true;
+  bool lane_2_free = true;
+  bool do_lane_change = false;
+  // Check if other lanes are free
+  if(too_close)
+  {
+    // Find rev_v to use
+    for(int i = 0; i < sensor_fusion.size(); i++)
     {
+      // Is a car in my lane?
+      d = sensor_fusion[i][6];
+      
       double vx = sensor_fusion[i][3];
       double vy = sensor_fusion[i][4];
       double check_speed = sqrt(pow(vx,2) + pow(vy,2));
@@ -99,22 +121,34 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
       
       check_car_s += (double)prev_size*0.02*check_speed;
       // Check if s values are greater than mine and s gap
-      if(abs(car_s - check_car_s) < 30)
+      if(abs(car_s - check_car_s) < 25)
       {
         // Lane 0 not free
-        if(d > 0 && d < 4)
+        if(d >= 0 && d < 4)
         {
           lane_0_free = false;
+          if(debug && count > 20)
+          {
+            cout << "\nlane 0 occupied";
+          }
         }
         // Lane 1 not free
         else if(d >= 4 && d <= 8)
         {
           lane_1_free = false;
+          if(debug && count > 20)
+          {
+            cout << "\nlane 1 occupied";
+          }
         }
         // Lane 2 not free
         else
         {
           lane_2_free = false;
+          if(debug && count > 20)
+          {
+            cout << "\nlane 2 occupied";
+          }
         }
       }
     }
@@ -123,34 +157,47 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   // Decide if lanechange is possible and if yes to which lane
   if(too_close)
   {
-    int old_lane = lane;
-    if((lane == 0 && lane_1_free) || (lane == 0 && lane_1_free))
+    // Own car is in the lane it should be -> Lane change is finished
+    if(car_d <= (2+4*lane+2) && car_d >= (2+4*lane-2))
     {
-      lane = 1;
-    }
-    else if(lane == 1)
-    {
-      if(lane_0_free)
-        lane = 0;
-      else if(lane_2_free)
-        lane = 2;
-    }
-    
-    // Lane change is not possible -> brake
-    if(old_lane == lane)
-    {
-      brake = true;
-    }
-    else
-    {
-      brake = false;
+      do_lane_change = false;
+      if((lane == 0 && lane_1_free) || (lane == 2 && lane_1_free))
+      {
+        lane = 1;
+        do_lane_change = true;
+        if(debug && count > 20)
+        {
+          cout << "\nDo lane change to 1";
+        }
+      }
+      else if(lane == 1)
+      {
+        if(lane_0_free)
+        {
+          lane = 0;
+          do_lane_change = true;
+          if(debug && count > 20)
+          {
+            cout << "\nDo lane change to 0";
+          }
+        }
+        else if(lane_2_free)
+        {
+          lane = 2;
+          do_lane_change = true;
+          if(debug && count > 20)
+          {
+            cout << "\nDo lane change to 2";
+          }
+        }
+      }
     }
   }
   
   // End Sensor Fusion Part
     
   // TODO optimise -> Video bei ca. 51:00
-  if(too_close && brake)
+  if(too_close)
   {
     ref_vel -= MAX_ACCEL; // TODO
   }
