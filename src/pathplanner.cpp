@@ -63,6 +63,59 @@ bool PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, int prev
   }
   return too_close;
 }
+
+vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s, vector<vector<double>> sensor_fusion, int prev_size)
+{
+  float d;
+  bool debug = true;
+  
+  // Find rev_v to use
+  for(int i = 0; i < sensor_fusion.size(); i++)
+  {
+    // Is a car in my lane?
+    d = sensor_fusion[i][6];
+    
+    double vx = sensor_fusion[i][3];
+    double vy = sensor_fusion[i][4];
+    double check_speed = sqrt(pow(vx,2) + pow(vy,2));
+    double check_car_s = sensor_fusion[i][5];
+    
+    check_car_s += (double)prev_size*0.02*check_speed;
+    // Check if s values are greater than mine and s gap
+    if(abs(car_s - check_car_s) < 20)
+    {
+      // Lane 0 not free
+      if(d >= 0 && d < 4)
+      {
+        lanes_change[0] = false;
+        if(debug && count > 20)
+        {
+          cout << "\nLane 0 is not free!";
+        }
+      }
+      // Lane 1 not free
+      else if(d >= 4 && d <= 8)
+      {
+        lanes_change[1] = false;
+        if(debug && count > 20)
+        {
+          cout << "\nLane 1 is not free!";
+        }
+      }
+      // Lane 2 not free
+      else
+      {
+        lanes_change[2] = false;
+        if(debug && count > 20)
+        {
+          cout << "\nLane 2 is not free!";
+        }
+      }
+    }
+  }
+  
+  return lanes_change;
+}
         
 vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<double>> sensor_fusion,
                          vector<double> previous_path_x, vector<double> previous_path_y, double end_path_s, double end_path_d)
@@ -110,60 +163,16 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   too_close = CheckActualLane(sensor_fusion, prev_size);
   
   
-  float d;
-  bool lane_0_free = true;
-  bool lane_1_free = true;
-  bool lane_2_free = true;
-  bool do_lane_change = false;
+  
+  
+  vector<bool> lanes_change = {true, true, true, false};
   // Check if other lanes are free
   if(too_close)
   {
-    // Find rev_v to use
-    for(int i = 0; i < sensor_fusion.size(); i++)
-    {
-      // Is a car in my lane?
-      d = sensor_fusion[i][6];
-      
-      double vx = sensor_fusion[i][3];
-      double vy = sensor_fusion[i][4];
-      double check_speed = sqrt(pow(vx,2) + pow(vy,2));
-      double check_car_s = sensor_fusion[i][5];
-      
-      check_car_s += (double)prev_size*0.02*check_speed;
-      // Check if s values are greater than mine and s gap
-      if(abs(car_s - check_car_s) < 20)
-      {
-        // Lane 0 not free
-        if(d >= 0 && d < 4)
-        {
-          lane_0_free = false;
-          if(debug && count > 20)
-          {
-            cout << "\nLane 0 is not free!";
-          }
-        }
-        // Lane 1 not free
-        else if(d >= 4 && d <= 8)
-        {
-          lane_1_free = false;
-          if(debug && count > 20)
-          {
-            cout << "\nLane 1 is not free!";
-          }
-        }
-        // Lane 2 not free
-        else
-        {
-          lane_2_free = false;
-          if(debug && count > 20)
-          {
-            cout << "\nLane 2 is not free!";
-          }
-        }
-      }
-    }
+    lanes_change = CheckAllLanes(lanes_change, car_s, sensor_fusion, prev_size);
   }
   
+  bool do_lane_change = false;
   // Decide if lanechange is possible and if yes to which lane
   if(too_close)
   {
@@ -171,7 +180,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
     if(car_d <= (2+4*lane+2) && car_d >= (2+4*lane-2))
     {
       do_lane_change = false;
-      if((lane == 0 && lane_1_free) || (lane == 2 && lane_1_free))
+      if((lane == 0 && lanes_change[1]) || (lane == 2 && lanes_change[1]))
       {
         lane = 1;
         do_lane_change = true;
@@ -182,7 +191,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
       }
       else if(lane == 1)
       {
-        if(lane_0_free)
+        if(lanes_change[0])
         {
           lane = 0;
           do_lane_change = true;
@@ -191,7 +200,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
             cout << "\nChange to lane 0!";
           }
         }
-        else if(lane_2_free)
+        else if(lanes_change[2])
         {
           lane = 2;
           do_lane_change = true;

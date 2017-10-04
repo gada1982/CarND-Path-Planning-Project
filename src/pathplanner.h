@@ -34,6 +34,8 @@ private:
   double ref_vel = 0.0;
   bool CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size);
   
+  vector<bool> CheckAllLanes(vector<bool> lanes_change, double car_s, vector<vector<double>> sensor_fusion, int prev_size);
+  
 public:
   PathPlanner(
      vector<double> map_waypoints_x,
