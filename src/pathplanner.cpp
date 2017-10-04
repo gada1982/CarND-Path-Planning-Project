@@ -116,6 +116,48 @@ vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s,
   
   return lanes_change;
 }
+
+bool PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
+{
+  bool debug = false;
+  bool do_lane_change = true;
+  // Own car is in the lane it should be -> Lane change is finished
+  if(car_d <= (2+4*lane+2) && car_d >= (2+4*lane-2))
+  {
+    do_lane_change = false;
+    if((lane == 0 && lanes_change[1]) || (lane == 2 && lanes_change[1]))
+    {
+      lane = 1;
+      do_lane_change = true;
+      if(debug && count > 20)
+      {
+        cout << "\nChange to lane 1!";
+      }
+    }
+    else if(lane == 1)
+    {
+      if(lanes_change[0])
+      {
+        lane = 0;
+        do_lane_change = true;
+        if(debug && count > 20)
+        {
+          cout << "\nChange to lane 0!";
+        }
+      }
+      else if(lanes_change[2])
+      {
+        lane = 2;
+        do_lane_change = true;
+        if(debug && count > 20)
+        {
+          cout << "\nChange to lane 2!";
+        }
+      }
+    }
+  }
+  return do_lane_change;
+}
         
 vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<double>> sensor_fusion,
                          vector<double> previous_path_x, vector<double> previous_path_y, double end_path_s, double end_path_d)
@@ -162,58 +204,19 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   // Check if actual Lane is free
   too_close = CheckActualLane(sensor_fusion, prev_size);
   
-  
-  
-  
-  vector<bool> lanes_change = {true, true, true, false};
+  vector<bool> lanes_change = {true, true, true};
   // Check if other lanes are free
   if(too_close)
   {
     lanes_change = CheckAllLanes(lanes_change, car_s, sensor_fusion, prev_size);
   }
   
-  bool do_lane_change = false;
+  bool do_lane_change;
   // Decide if lanechange is possible and if yes to which lane
   if(too_close)
   {
-    // Own car is in the lane it should be -> Lane change is finished
-    if(car_d <= (2+4*lane+2) && car_d >= (2+4*lane-2))
-    {
-      do_lane_change = false;
-      if((lane == 0 && lanes_change[1]) || (lane == 2 && lanes_change[1]))
-      {
-        lane = 1;
-        do_lane_change = true;
-        if(debug && count > 20)
-        {
-          cout << "\nChange to lane 1!";
-        }
-      }
-      else if(lane == 1)
-      {
-        if(lanes_change[0])
-        {
-          lane = 0;
-          do_lane_change = true;
-          if(debug && count > 20)
-          {
-            cout << "\nChange to lane 0!";
-          }
-        }
-        else if(lanes_change[2])
-        {
-          lane = 2;
-          do_lane_change = true;
-          if(debug && count > 20)
-          {
-            cout << "\nChange to lane 2!";
-          }
-        }
-      }
-    }
+    do_lane_change = ChooseLaneToChange(lanes_change, car_d);
   }
-  
-  // End Sensor Fusion Part
     
   // Adjust velocity
   if(too_close)

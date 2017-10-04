@@ -36,6 +36,8 @@ private:
   
   vector<bool> CheckAllLanes(vector<bool> lanes_change, double car_s, vector<vector<double>> sensor_fusion, int prev_size);
   
+  bool ChooseLaneToChange(vector<bool> lanes_change, double car_d);
+  
 public:
   PathPlanner(
      vector<double> map_waypoints_x,
