@@ -59,7 +59,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   if(debug && count > 50)
   {
     count = 0;
-    cout << "\ncar_s: " << car_s << " end_path_s: " << end_path_s;
+    cout << "\ncar_s: " << car_s;
   }
   
   // Start Sensor Fusion Part
@@ -89,7 +89,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
       
       check_car_s += (double)prev_size*0.02*check_speed;
       // Check if s values are greater than mine and s gap
-      if((check_car_s > car_s) && ((check_car_s - car_s) < 25))
+      if((check_car_s > car_s) && ((check_car_s - car_s) < 20))
       {
         // TODO do something more sophisticated
         too_close = true;
@@ -121,7 +121,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
       
       check_car_s += (double)prev_size*0.02*check_speed;
       // Check if s values are greater than mine and s gap
-      if(abs(car_s - check_car_s) < 25)
+      if(abs(car_s - check_car_s) < 20)
       {
         // Lane 0 not free
         if(d >= 0 && d < 4)
