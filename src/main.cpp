@@ -49,6 +49,7 @@ int main() {
   
   ifstream in_map_(map_file_.c_str(), ifstream::in);
   
+  // Get all the map data
   string line;
   while (getline(in_map_, line)) {
     istringstream iss(line);
@@ -90,7 +91,7 @@ int main() {
         if (event == "telemetry") {
           // j[1] is the data JSON object
           
-          // Main car's localization Data
+          // Main car's localization data
           double car_x = j[1]["x"];
           double car_y = j[1]["y"];
           double car_s = j[1]["s"];
@@ -98,21 +99,7 @@ int main() {
           double car_yaw = j[1]["yaw"];
           double car_speed = j[1]["speed"];
           
-          // Previous path data given to the Planner
-          auto previous_path_x = j[1]["previous_path_x"];
-          auto previous_path_y = j[1]["previous_path_y"];
-          // Previous path's end s and d values
-          double end_path_s = j[1]["end_path_s"];
-          double end_path_d = j[1]["end_path_d"];
-          
-          // Sensor Fusion Data, a list of all other cars on the same side of the road.
-          auto sensor_fusion = j[1]["sensor_fusion"];
-          
-          json msgJson;
-          
-          vector<double> next_x_vals;
-          vector<double> next_y_vals;
-          
+          // Vector to store car data
           vector<double> car_data = {
             car_x,
             car_y,
@@ -122,10 +109,25 @@ int main() {
             car_speed
           };
           
+          // Previous path data given to the Planner
+          auto previous_path_x = j[1]["previous_path_x"];
+          auto previous_path_y = j[1]["previous_path_y"];
+          
+          // Previous path's end s and d values
+          double end_path_s = j[1]["end_path_s"];
+          double end_path_d = j[1]["end_path_d"];
+          
+          // Sensor Fusion Data, a list of all other cars on the same side of the road
+          auto sensor_fusion = j[1]["sensor_fusion"];
+          
           // Calculate the new path for the vehicle
           vector<double> planned_path = pathPlanner.SolvePath(car_data, sensor_fusion, previous_path_x, previous_path_y, end_path_s, end_path_d);
           
-          // Set together the lines for x/y values
+          // Vector to store the new trajectory
+          vector<double> next_x_vals;
+          vector<double> next_y_vals;
+          
+          // Create the x/y data for the new trajectory
           for (int i = 0; i < planned_path.size(); i++) {
             if (i % 2 == 0) {
               next_x_vals.push_back(planned_path[i]);
@@ -134,8 +136,8 @@ int main() {
             }
           }
           
-          // End of TODO
-          
+          // New data for the simulator
+          json msgJson;
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
           
@@ -143,7 +145,6 @@ int main() {
           
           //this_thread::sleep_for(chrono::milliseconds(1000));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-          
         }
       } else {
         // Manual driving
