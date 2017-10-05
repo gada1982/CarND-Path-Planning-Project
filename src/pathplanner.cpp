@@ -45,7 +45,7 @@ bool PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, int prev
   
   // Don't get closer to the car in front then this amount
   // Brake or change lane if violeted
-  int safety_distance = 20;
+  int safety_distance = 25;
   
   // Use sensor fusion data to check if there is a slower car in front (on the same lane)
   for(int i = 0; i < sensor_fusion.size(); i++)
