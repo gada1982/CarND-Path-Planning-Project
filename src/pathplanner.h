@@ -1,10 +1,16 @@
+/*
+ * pathplanner.h
+ *
+ * Created on: October 05, 2017
+ * Author: Daniel Gattringer
+ * Mail: daniel@gattringer.biz
+ */
+
 #ifndef PATHPLANNER_H
 #define PATHPLANNER_H
 
 #include <cmath>
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
 
 using namespace std;
 

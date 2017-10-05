@@ -1,6 +1,12 @@
+/*
+ * helper.cpp
+ *
+ * Created on: October 05, 2017
+ * Author: Daniel Gattringer
+ * Mail: daniel@gattringer.biz
+ */
+
 #include "helper.h"
-#include <cmath>
-#include <vector>
 
 using namespace std;
 

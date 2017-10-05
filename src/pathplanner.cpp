@@ -1,12 +1,19 @@
+/*
+ * pathplanner.cpp
+ *
+ * Created on: October 05, 2017
+ * Author: Daniel Gattringer
+ * Mail: daniel@gattringer.biz
+ */
+
 #include <cmath>
 #include <vector>
 #include <iostream>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
 #include "spline.h"
 #include "helper.h"
 #include "pathplanner.h"
 
+using namespace std;
 
 // Path Planner class definition
 PathPlanner::PathPlanner(vector<double> map_waypoints_x, vector<double> map_waypoints_y,
@@ -179,7 +186,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   
   //impacts default behavior for most states
   float SPEED_LIMIT = 49.5;
-  float MAX_ACCEL = 0.35;
+  float MAX_ACCEL = 0.224;
   
   vector<double> new_path;
   

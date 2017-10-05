@@ -1,15 +1,15 @@
+/*
+ * main.cpp
+ *
+ * Created on: October 05, 2017
+ * Author: Daniel Gattringer
+ * Mail: daniel@gattringer.biz
+ */
+
 #include <fstream>
-#include <math.h>
 #include <uWS/uWS.h>
-#include <chrono>
 #include <iostream>
-#include <thread>
-#include <vector>
-#include "Eigen-3.3/Eigen/Core"
-#include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
-#include "spline.h"
-#include "helper.h"
 #include "pathplanner.h"
 
 using namespace std;

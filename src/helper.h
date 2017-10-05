@@ -1,3 +1,11 @@
+/*
+ * helper.h
+ *
+ * Created on: October 05, 2017
+ * Author: Daniel Gattringer
+ * Mail: daniel@gattringer.biz
+ */
+
 #ifndef HELPER_H
 #define HELPER_H
 
