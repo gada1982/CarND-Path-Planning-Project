@@ -239,7 +239,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   if(debug && count > 50)
   {
     count = 0;
-    cout << "\nOwn car s: " << car_s;
+    cout << "\nOwn car s: " << car_s << ", car speed: " << car_speed;
   }
   
   // Start Sensor Fusion Part
@@ -262,10 +262,15 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   
   // Decide if a lane change is possible and if yes to which lane
   // This is only done when the own lane is occupied by a slower car
-  // The car is only changing lane when going faster than 30mph
-  if(too_close && car_speed > 30)
+  // The car is only changing lane when going faster than 35mph
+  if(too_close)
   {
-    ChooseLaneToChange(lanes_change, car_d);
+    if(car_speed > 35.0)
+      ChooseLaneToChange(lanes_change, car_d);
+    else
+    {
+      cout << "\nToo slow for a safe lane change!";
+    }
   }
     
   // Adjust velocity
