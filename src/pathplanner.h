@@ -50,14 +50,14 @@ private:
   double end_path_d;
   
   // Check if there is a car in front (on the same lane)
-  bool CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size);
+  vector<bool> CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size);
   
   // Check if there is traffic on all lanes at the relevant position of the track
   // Before and behind the own car
   vector<bool> CheckAllLanes(vector<bool> lanes_change, double car_s, vector<vector<double>> sensor_fusion, int prev_size);
   
   // Decide which lane should be taken (depands on the actual lane and the traffic on the other lanes)
-  void ChooseLaneToChange(vector<bool> lanes_change, double car_d);
+  bool ChooseLaneToChange(vector<bool> lanes_change, double car_d);
   
   // Generate the next trajectory
   vector<double> GenerateNextPath(int prev_size);

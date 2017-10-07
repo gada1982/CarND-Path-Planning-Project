@@ -38,9 +38,9 @@ PathPlanner::PathPlanner(vector<double> map_waypoints_x, vector<double> map_wayp
 PathPlanner::~PathPlanner() {}
 
 // Check if there is a car in front (on the same lane)
-bool PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size)
+vector<bool> PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, int prev_size)
 {
-  bool too_close = false;
+  vector<bool> too_close = {false, false};
   bool debug = true;
   
   // Don't get closer to the car in front then this amount
@@ -66,8 +66,16 @@ bool PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, int prev
       // Check if there is a car in front of me within the given Distance
       if((check_car_s > car_s) && ((check_car_s - car_s) < safety_distance))
       {
+        if((check_car_s - car_s) < safety_distance/2)
+        {
+          too_close[1] = true;
+        }
+        else
+        {
+            too_close[1] = false;
+        }
         // There is a car to close in front
-        too_close = true;
+        too_close[0] = true;
         
         // Print some screen information
         if(debug && count > 20)
@@ -117,7 +125,7 @@ vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s,
         // Print some screen information
         if(debug && count > 20)
         {
-          cout << "\nLane 0 is not free!";
+          cout << "\nLane 0 is occupied!";
         }
       }
       // Check if lane 1 (middle lane) is free
@@ -129,7 +137,7 @@ vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s,
         // Print some screen information
         if(debug && count > 20)
         {
-          cout << "\nLane 1 is not free!";
+          cout << "\nLane 1 is occupied!";
         }
       }
       // Check if lane 2 (most right lane) is free
@@ -141,7 +149,7 @@ vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s,
         // Print some screen information
         if(debug && count > 20)
         {
-          cout << "\nLane 2 is not free!";
+          cout << "\nLane 2 is occupied!";
         }
       }
     }
@@ -151,20 +159,23 @@ vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s,
 }
 
 // Decide which lane should be taken (depands on the actual lane and the traffic on the other lanes)
-void PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
+bool PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
 {
   bool debug = false;
+  bool doLaneChange;
   
   // Check if the own car is in the lane it should be -> Lane change is finished
   // Don't change lane again before the prior lane change is finished
   if(car_d <= (2+4*lane+2) && car_d >= (2+4*lane-2))
   {
+    doLaneChange = false;
     // The own car is at lane 0 (most left) or lane 2 (most right)
     // Check if lane 1 (middle lane) is free
     // If yes change to lane 1 (middle lane)
     if((lane == 0 && lanes_change[1]) || (lane == 2 && lanes_change[1]))
     {
       lane = 1;
+      doLaneChange = true;
       
       // Print some screen information
       if(debug && count > 20)
@@ -180,6 +191,7 @@ void PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
       if(lanes_change[0])
       {
         lane = 0;
+        doLaneChange = true;
         
         // Print some screen information
         if(debug && count > 20)
@@ -192,6 +204,7 @@ void PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
       else if(lanes_change[2])
       {
         lane = 2;
+        doLaneChange = true;
         
         // Print some screen information
         if(debug && count > 20)
@@ -201,6 +214,7 @@ void PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
       }
     }
   }
+  return doLaneChange;
 }
 
 // Solves the pathplanning problem
@@ -249,13 +263,14 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   }
   
   // Check if actual lane is free or if it is occupied by a slower car
-  bool too_close = false;
+  vector<bool> too_close = {false, false};
+  bool doLaneChange = false;
   too_close = CheckActualLane(sensor_fusion, prev_size);
   
   // Check if the other lanes are free
   // This is only done when the own lane is occupied by a slower car
   vector<bool> lanes_change = {true, true, true};
-  if(too_close)
+  if(too_close[0])
   {
     lanes_change = CheckAllLanes(lanes_change, car_s, sensor_fusion, prev_size);
   }
@@ -263,10 +278,16 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   // Decide if a lane change is possible and if yes to which lane
   // This is only done when the own lane is occupied by a slower car
   // The car is only changing lane when going faster than 35mph
-  if(too_close)
+  if(too_close[0])
   {
     if(car_speed > 35.0)
-      ChooseLaneToChange(lanes_change, car_d);
+    {
+      doLaneChange = ChooseLaneToChange(lanes_change, car_d);
+      if(doLaneChange)
+      {
+        too_close[0] = false;
+      }
+    }
     else
     {
       cout << "\nToo slow for a safe lane change!";
@@ -275,9 +296,19 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
     
   // Adjust velocity
   // If the own lane is occupied by a slower car -> brake
-  if(too_close)
+  if(too_close[0])
   {
-    ref_vel -= change_rate_speed;
+    if(too_close[1])
+    {
+      // Brake harder because or small distance to the car in front
+      ref_vel -= 1.8*change_rate_speed;
+      cout << "\nEMERGENCY BRAKE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    }
+    else
+    {
+      ref_vel -= change_rate_speed;
+    }
+    
   }
   // If the own lane is NOT occupied by a slower car and the own car has not reached the speed limit -> accelerate
   else if(ref_vel < speed_limit)
