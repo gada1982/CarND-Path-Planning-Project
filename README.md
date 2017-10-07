@@ -4,8 +4,10 @@ This project is done as a part of the Nanodegree - *Self-Driving Car Engineer* p
 ![image_screen](https://github.com/gada1982/CarND-MPC-Project/blob/master/info_for_readme/Screenshot_jpg.jpg)
 
 The goals / steps of this project are the following:
-- 
-- 
+
+- Test
+- Test1
+
 
 
 # Outline
@@ -16,7 +18,7 @@ The goals / steps of this project are the following:
   
 # Requirements
 
-## Development Environment
+### Development Environment
 - cmake >= 3.5
    - All OSes: [click here for installation instructions](https://cmake.org/install/)
 - make >= 4.1
@@ -35,17 +37,26 @@ The goals / steps of this project are the following:
     cd uWebSockets
     git checkout e94b6e1
     ```
-## Build Instructions
-1. Clone this repo.
+### Build Instructions
+1. Clone this repo
 2. Make a build directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./path_planning`.
+4. Run it: `./path_planning`
 
-## Simulator
+### Simulator
 - Udacity Term3 [simulator] (https://github.com/udacity/self-driving-car-sim/releases) which contains the Path Planning Project.
 
 # Files
 
+### Source Files
+- *main.cpp* - Main file to communicate with the simulator and trigger the pathplanner
+- *pathplanner.h/.cpp* - Pathplanner to create safe, smooth and efficient trajectories for the car
+- *helper.h/.cpp* - Helper functions
+- *spline.h* - Library used for creating splines (used for the trajectories)
+- *json.hpp* - Library used for the communication with the simulator
+
+### Data File
+- *highway_map.csv* - File with waypoints around the track (yellow middle lane)
 
 ### Goals
 In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 50 m/s^3.
