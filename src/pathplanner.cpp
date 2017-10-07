@@ -262,7 +262,8 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   
   // Decide if a lane change is possible and if yes to which lane
   // This is only done when the own lane is occupied by a slower car
-  if(too_close)
+  // The car is only changing lane when going faster than 30mph
+  if(too_close && car_speed > 30)
   {
     ChooseLaneToChange(lanes_change, car_d);
   }
