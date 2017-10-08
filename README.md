@@ -78,7 +78,7 @@ Valid trajectories have the following attributes:
 # Implementation Details
 
 ### Driving Behaviour
-The car drives as fast as possible but don't go faster than the speed limit (50mph). It accelerates and brakes smoothly except there is need for an emergency brake, because of a car which changes lane to close to the front of the car.
+The car drives as fast as possible but doesn't go faster than the speed limit (50mph). It accelerates and brakes smoothly except there is the need for an emergency brake, because of an other car which changes the lane to close to the front of the own car.
 
 The following dummy code from the implementation in *pathplanner.cpp* shows how acceleration and braking is implemented:
 
@@ -107,10 +107,10 @@ else if(DISTANCE_TO_CAR_IN_FRONT < 25m)
 ```
 
 ### Collission Avoidance
+Collission avoidance is implemented detacting if a car is within the safety distance (25m) in front of the own car. If yes the path planner has to decide if it possible to change lane safely or if the car has to brake to stay behind the slower car. `CheckActualLane()` in *pathplanner.cpp* checks if there is a car in front of the own car. If yes all other lanes are checked by `CheckAllLanes()`. This functions returns the information if the other lanes are occupied by other cars. A safe lane change is only possible if there is no other car in front (25m) or behind (25m) on the next lane on the right or on the left side.
 
 ### Changing Lanes
-
-
+Changing lane can only be triggerd if the own car has finished the last lane change manover (???) an it has completely reached the lane where it should be. This prevents from swerving around between lanes if the lane where to car should change to is occupied too. The car is only allowed to start a lane change when it is going faster than 35mph to avoid getting hit by a faster car on the next lane which could not be detected because of the limited sensor range. All of this is checked in function `ChooseLaneToChange()` within *pathplanner.cpp*. Finally the function `ChooseLaneToChange()` returns if a lane change should be done and if yes it sets the target lane number.
 
 # Conclusion
 
