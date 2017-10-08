@@ -77,6 +77,41 @@ Valid trajectories have the following attributes:
 
 # Implementation Details
 
+### Driving Behaviour
+The car drives as fast as possible but don't go faster than the speed limit (50mph). It accelerates and brakes smoothly except there is need for an emergency brake, because of a car which changes lane to close to the front of the car.
+
+The following dummy code from the implementation in *pathplanner.cpp* shows how acceleration and braking is implemented:
+
+Acceleration until the speed limit is reached:
+```
+if(ref_vel < 50mph)
+{
+  // Accelerate with 5m/s^2
+  ref_vel += change_rate_speed;
+}
+```
+
+Braking:
+```
+if(DISTANCE_TO_CAR_IN_FRONT < 12.5m)
+{
+  // Emergency Brake
+  // Brake with 9m/s^2
+  ref_vel -= 1.8*change_rate_speed;
+}
+else if(DISTANCE_TO_CAR_IN_FRONT < 25m)
+{
+  // Brake with 5m/s^2
+  ref_vel -= change_rate_speed;
+}
+```
+
+### Collission Avoidance
+
+### Changing Lanes
+
+
+
 # Conclusion
 
 The following [video](https://youtu.be/_x-chRCk67s) shows how the car, which is controlled by the implemented path planner, manages driving on the virtual highway.
