@@ -169,49 +169,60 @@ bool PathPlanner::ChooseLaneToChange(vector<bool> lanes_change, double car_d)
   if(car_d <= (2+4*lane+2) && car_d >= (2+4*lane-2))
   {
     doLaneChange = false;
-    // The own car is at lane 0 (most left) or lane 2 (most right)
-    // Check if lane 1 (middle lane) is free
-    // If yes change to lane 1 (middle lane)
-    if((lane == 0 && lanes_change[1]) || (lane == 2 && lanes_change[1]))
+    
+    // Only change lane if faster than 35mph
+    if(car_speed > 35.0)
     {
-      lane = 1;
-      doLaneChange = true;
-      
-      // Print some screen information
-      if(debug && count > 20)
+      // The own car is at lane 0 (most left) or lane 2 (most right)
+      // Check if lane 1 (middle lane) is free
+      // If yes change to lane 1 (middle lane)
+      if((lane == 0 && lanes_change[1]) || (lane == 2 && lanes_change[1]))
       {
-        cout << "\nChange to lane 1!";
+        lane = 1;
+        doLaneChange = true;
+        
+        // Print some screen information
+        if(debug && count > 20)
+        {
+          cout << "\nChange to lane 1!";
+        }
+      }
+      // The own car is at lane 1 (middle lane)
+      else if(lane == 1)
+      {
+        // Check if lane 0 (most left lane) is free
+        // If yes change to lane 0 (most left  lane)
+        if(lanes_change[0])
+        {
+          lane = 0;
+          doLaneChange = true;
+          
+          // Print some screen information
+          if(debug && count > 20)
+          {
+            cout << "\nChange to lane 0!";
+          }
+        }
+        // If lane 0 (most left lane) is not free, check if lane 2 (most right lane) is free
+        // If yes change to lane 2 (most right  lane)
+        else if(lanes_change[2])
+        {
+          lane = 2;
+          doLaneChange = true;
+          
+          // Print some screen information
+          if(debug && count > 20)
+          {
+            cout << "\nChange to lane 2!";
+          }
+        }
       }
     }
-    // The own car is at lane 1 (middle lane)
-    else if(lane == 1)
+    // No lane change if slower than 35mph
+    else
     {
-      // Check if lane 0 (most left lane) is free
-      // If yes change to lane 0 (most left  lane)
-      if(lanes_change[0])
-      {
-        lane = 0;
-        doLaneChange = true;
-        
-        // Print some screen information
-        if(debug && count > 20)
-        {
-          cout << "\nChange to lane 0!";
-        }
-      }
-      // If lane 0 (most left lane) is not free, check if lane 2 (most right lane) is free
-      // If yes change to lane 2 (most right  lane)
-      else if(lanes_change[2])
-      {
-        lane = 2;
-        doLaneChange = true;
-        
-        // Print some screen information
-        if(debug && count > 20)
-        {
-          cout << "\nChange to lane 2!";
-        }
-      }
+      doLaneChange = false;
+      cout << "\nToo slow for a safe lane change!";
     }
   }
   return doLaneChange;
@@ -280,17 +291,10 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   // The car is only changing lane when going faster than 35mph
   if(too_close[0])
   {
-    if(car_speed > 35.0)
+    doLaneChange = ChooseLaneToChange(lanes_change, car_d);
+    if(doLaneChange)
     {
-      doLaneChange = ChooseLaneToChange(lanes_change, car_d);
-      if(doLaneChange)
-      {
-        too_close[0] = false;
-      }
-    }
-    else
-    {
-      cout << "\nToo slow for a safe lane change!";
+      too_close[0] = false;
     }
   }
     
@@ -308,7 +312,6 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
     {
       ref_vel -= change_rate_speed;
     }
-    
   }
   // If the own lane is NOT occupied by a slower car and the own car has not reached the speed limit -> accelerate
   else if(ref_vel < speed_limit)
