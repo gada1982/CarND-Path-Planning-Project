@@ -66,10 +66,12 @@ vector<bool> PathPlanner::CheckActualLane(vector<vector<double>> sensor_fusion, 
       // Check if there is a car in front of me within the given Distance
       if((check_car_s > car_s) && ((check_car_s - car_s) < safety_distance))
       {
+        // The car in front is really close -> brake harder (emergency brake)
         if((check_car_s - car_s) < safety_distance/2)
         {
           too_close[1] = true;
         }
+        // The car in front is in a normal distance. Brake but not too hard for a smooth ride
         else
         {
             too_close[1] = false;
