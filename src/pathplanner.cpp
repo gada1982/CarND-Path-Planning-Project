@@ -275,7 +275,6 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   
   // Check if actual lane is free or if it is occupied by a slower car
   vector<bool> too_close = {false, false};
-  bool doLaneChange = false;
   too_close = CheckActualLane(sensor_fusion, prev_size);
   
   // Check if the other lanes are free
@@ -289,6 +288,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   // Decide if a lane change is possible and if yes to which lane
   // This is only done when the own lane is occupied by a slower car
   // The car is only changing lane when going faster than 35mph
+  bool doLaneChange = false;
   if(too_close[0])
   {
     doLaneChange = ChooseLaneToChange(lanes_change, car_d);
@@ -304,7 +304,7 @@ vector<double> PathPlanner::SolvePath(vector<double> car_data, vector<vector<dou
   {
     if(too_close[1])
     {
-      // Brake harder because or small distance to the car in front
+      // Brake harder because of really small distance to the car in front
       ref_vel -= 1.8*change_rate_speed;
       cout << "\nEMERGENCY BRAKE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     }
