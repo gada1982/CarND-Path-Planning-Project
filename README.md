@@ -1,5 +1,5 @@
 # Introduction
-This project is done as a part of the Nanodegree *Self-Driving Car Engineer* provided by Udacity. The goal of this project is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. Therefor a path planner has to be implemented which generates smooth, safe but efficient trajectories for the car to follow.
+This project is done as a part of the Nanodegree *Self-Driving Car Engineer* provided by Udacity. The goal of this project is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. Therefore a path planner has to be implemented which generates smooth, safe but efficient trajectories for the car to follow.
 
 ![image_screen](https://github.com/gada1982/CarND-Path-Planning-Project/blob/master/info/Screenshot1.png)
 
