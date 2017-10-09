@@ -72,7 +72,7 @@ Valid trajectories have the following attributes:
 - The car drives according to the speed limit.
 - Max Acceleration and Jerk are not exceeded.
 - The car does not have collisions.
-- The car stays in its lane, except for the time between changing lanes.
+- The car stays in its lane, except for the time between changing lanes (max. 3 seconds).
 - The car is able to change lanes.
 
 # Implementation Details
