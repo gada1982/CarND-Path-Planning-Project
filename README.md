@@ -62,7 +62,7 @@ Each waypoint is represented by [x,y,s,dx,dy] values. X and y are the waypoint's
 The localization module delivers data about the own car. Each set of data includes [x,y,s,d,yaw,speed]. In addition to this basic information, data about the previous path [previous_path_x, previous_path_y, end_path_s, end_path_d] is given back to use it at the actual cycle to generate smoother trajectories.
 
 ### Sensor Fusion Data
-The sensor fusion module delivers data about all other cars which are driving next to the own car. The data format for each car includes [ id, x, y, vx, vy, s, d]. The id is a unique identifier for that car. The x, y values are in global map coordinates, and vx, vy are the velocity components, also in reference to the global map. Finally s and d are the Frenet coordinates for each car.
+The sensor fusion module delivers data about all other cars which are driving next to the own car. The data format for each car includes [ id, x, y, vx, vy, s, d]. The id is a unique identifier for a single car. The x, y values are in global map coordinates, and vx, vy are the velocity components, also in reference to the global map. Finally s and d are the Frenet coordinates for each car.
 
 ### Definition of valid trajectories:
 
