@@ -143,5 +143,5 @@ Based on the actual implementation a more complex solution will be implemented b
 - Predict how the other cars will behave in the future (next few seconds) and not only check the actual situation
 - Implement an optimising lane change algorithms, which better checks on which lane the car will be able to drive at the highest speed in the near future
 - Use the actual speed to adjust the safety distance necessary in front or behind the car
-- Implemented a solution to actively search for free spaces for a lane change. Brake, drive as fast as the cars on the next lane and change.
+- Implemented a solution to actively search for free spaces for a lane change. E.g. brake, drive as fast as the cars on the next lane and change.
 - ...
