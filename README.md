@@ -76,7 +76,7 @@ Valid trajectories have the following attributes:
 - The car is able to change lanes.
 
 # Implementation Details
-The following image show a simplified cycle of the path planning algorithm.
+The following image shows a simplified cycle of the path planning algorithm.
 
 ![image_screen](https://github.com/gada1982/CarND-Path-Planning-Project/blob/master/info/cycle.png)
 
