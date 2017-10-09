@@ -81,9 +81,9 @@ The following image shows a simplified cycle of the path planning algorithm.
 ![image_screen](https://github.com/gada1982/CarND-Path-Planning-Project/blob/master/info/cycle.png)
 
 ### Driving Behaviour
-The car drives as fast as possible but doesn't go faster than the speed limit (50mph). It accelerates and brakes smoothly except there is the need for an emergency brake, because of an other car which changes the lane to close to the front of the own car.
+The car drives as fast as possible but doesn't go faster than the speed limit (50mph). It accelerates and brakes smoothly except there is the need for an emergency brake, because of acar which changes the lane to close to the front of the own car.
 
-The following dummy code from the implementation in *pathplanner.cpp* shows how acceleration and braking is implemented and how the maximal allowed acceleration and braking (10m/s^2) is handled:
+The following dummy code from the implementation in *pathplanner.cpp* shows how acceleration and braking are implemented and how the maximal allowed acceleration and braking (10m/s^2) is handled:
 
 Acceleration until the speed limit is reached:
 ```
