@@ -76,6 +76,9 @@ Valid trajectories have the following attributes:
 - The car is able to change lanes.
 
 # Implementation Details
+The following image show a simplified cycle of the path planning algorithm.
+
+![image_screen](https://github.com/gada1982/CarND-Path-Planning-Project/blob/master/info/cycle.png)
 
 ### Driving Behaviour
 The car drives as fast as possible but doesn't go faster than the speed limit (50mph). It accelerates and brakes smoothly except there is the need for an emergency brake, because of an other car which changes the lane to close to the front of the own car.
