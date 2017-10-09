@@ -134,7 +134,7 @@ Behavior Planning and path planning are really complex areas within the developm
 
 The solution was kept as simple as possible while meeting all of the project requirements. 
 
-The following [video](https://youtu.be/_x-chRCk67s) shows how the car, which is controlled by the implemented path planner, manages driving on the virtual highway.
+The following [video](https://youtu.be/mB2NVoA1Xdg) shows how the car, which is controlled by the implemented path planner, manages driving on the virtual highway.
 
 Based on the actual implementation a more complex solution will be implemented because there are many points for further improvements:
 - Refactor the code
