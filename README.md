@@ -141,7 +141,7 @@ Based on the actual implementation a more complex solution will be implemented b
 - Include a "real" finite state machine and more complex cost functions
 - Include the speed of the car to follow, and not only the distance how far it is away, to get a smoother ride
 - Predict how the other cars will behave in the future (next few seconds) and not only check the actual situation
-- Implement an optimising lane change algorithms, which better checks on which lane the car will be able to go at the highest speed in the near future
+- Implement an optimising lane change algorithms, which better checks on which lane the car will be able to drive at the highest speed in the near future
 - Use the actual speed to adjust the safety distance necessary in front or behind the car
 - Implemented a solution to actively search for free spaces for a lane change. Brake, drive as fast as the cars on the next lane and change.
 - ...
