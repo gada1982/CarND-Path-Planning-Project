@@ -97,7 +97,7 @@ vector<bool> PathPlanner::CheckAllLanes(vector<bool> lanes_change, double car_s,
   
   // Changing lane is only safe if there is enough free space
   // In front of the car and behind the car
-  int safety_distance = 20;
+  int safety_distance = 25;
   
   // Find rev_v to use
   for(int i = 0; i < sensor_fusion.size(); i++)
