@@ -53,7 +53,7 @@ This project is done as a part of the Nanodegree *Self-Driving Car Engineer* pro
 - *highway_map.csv* - File with waypoints around the track (yellow middle lane)
 
 # Project Description
-The path planner, which has to be developed, gets map data (highway), the car's localization data and sensor fusion data, which represent the other cars on the highway. The car should try to go as close as possible to the 50 mph speed limit, which means passing slower traffic when possible, while other cars will try to change lanes too. The car should avoid hitting other cars at all cost. The car should drive inside of the marked road lanes at all times, unless going from one lane to another. The car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 50 m/s^3.
+The path planner, which has to be developed, gets map data (highway), the car's localization data and sensor fusion data, which represent the other cars on the highway. The car should try to go as close as possible to the 50 mph speed limit, which means passing slower traffic when possible, while other cars will try to change lanes too. The car should avoid hitting other cars at all cost. The car should drive inside of the marked road lanes at all times, unless going from one lane to another. The car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
 
 ### Map Data
 Each waypoint is represented by [x,y,s,dx,dy] values. X and y are the waypoint's map coordinate position. The s value is the distance along the road in Frenet coordinate system and dx and dy define the distance vector (in Frenet system) from the center of the road (yellow) line to the border of the road. One lane is 4 meters wide. The highway is a closed loop with s value going form 0 to 6945.554.
@@ -106,18 +106,30 @@ else if(DISTANCE_TO_CAR_IN_FRONT < 25m)
 }
 ```
 
+Jerk is minimized by using splines with 50 points for the trajectory, which includes points from the last trajectory to get a smooth transition.
+
 ### Collission Avoidance
-Collission avoidance is implemented detacting if a car is within the safety distance (25m) in front of the own car. If yes the path planner has to decide if it possible to change lane safely or if the car has to brake to stay behind the slower car. `CheckActualLane()` in *pathplanner.cpp* checks if there is a car in front of the own car. If yes all other lanes are checked by `CheckAllLanes()`. This functions returns the information if the other lanes are occupied by other cars. A safe lane change is only possible if there is no other car in front (25m) or behind (25m) on the next lane on the right or on the left side.
+To avoid collisions the most important part is to detect if a car is within the safety distance (25m) in front of the own car. If yes the path planner has to decide if it is possible to change the lane safely or if the car has to brake to stay behind the slower car. `CheckActualLane()` in *pathplanner.cpp* checks if there is a car in front of the own car. If yes the occupation status of all other lanes is checked by `CheckAllLanes()`. This functions returns the information if the other lanes are occupied by other cars. A safe lane change to the left or to the right is only possible if there is no other car in front (25m) or behind (25m) the own car on the next lane on the right or on the left side. This function of course uses the information about the actual lane to decide if the own car is already driving on the outer left or outer right lane.
 
 ### Changing Lanes
-Changing lane can only be triggerd if the own car has finished the last lane change manover (???) an it has completely reached the lane where it should be. This prevents from swerving around between lanes if the lane where to car should change to is occupied too. The car is only allowed to start a lane change when it is going faster than 35mph to avoid getting hit by a faster car on the next lane which could not be detected because of the limited sensor range. All of this is checked in function `ChooseLaneToChange()` within *pathplanner.cpp*. Finally the function `ChooseLaneToChange()` returns if a lane change should be done and if yes it sets the target lane number.
+Changing lane can only be triggerd if the own car has finished the last lane change manover and it has completely reached the lane where it should be. This prevents the car from swerving around between lanes if the lane, where to car should change to, is occupied too. At the moment the car is only allowed to start a lane change when it is going faster than 35mph to avoid getting hit by a faster car on the next lane which could not be detected because of the limited sensor range. All these points are checked in function `ChooseLaneToChange()` within *pathplanner.cpp*. Finally the function `ChooseLaneToChange()` returns if a lane change should/can be done and if yes it sets the new target lane number.
 
 ### Creating a Path
-The trajectory for the next cylce (approximately every 50ms) is generated by the function `GenerateNextPath()` within *pathplanner.cpp*. This part of the implemententation is strongly influenced by the *Q&A - Video* which is provided by Udactiy for this project. The implementation uses the previous car trajectory, which is deliverd by the simulator, to make sure that the car doesn't turn or accelerate/brake to fast and violate the acceleration or jerk limit. Afterwards the pipeline adds these previous points and new target points 30, 60, 90m in front of the car within it's actual lane or at the lane which a lane change should be made to to a spline. This spline is the base for the next trajectory. This spline is filled up with 50 new target points. The distance between the single points depands how fast the car should go within the next cycle (50ms). The faster the car should drive, the bigger is the distance between two of these points. This generates smooth tracjectories which never violate the maximal turn rates, acceleration and jerk limits.
+The trajectory for the next cycle (approximately every 20ms) is generated by the function `GenerateNextPath()` within *pathplanner.cpp*. This part of the implemententation is strongly influenced by the *Q&A - Video* which is provided by Udactiy for this project. The implementation uses the previous car trajectory, which is delivered by the simulator, to make sure that the car doesn't turn or accelerate/brake to fast and violates the acceleration or jerk limits. The pipeline adds some of these previous points and new target points 30, 60, 90m in front of the car within it's actual lane or within the lane which the car should change to. This anker points build up a spline. This spline is the base for the next trajectory. A new trajectory with 50 target points is build out of the old reused target points and new ones. The distance between the single points depand how fast the car should go (*ref_vel*) within the next cycle (20ms). The faster the car should drive, the bigger the distance between two of these points has to be. All of these is necessary to generate smooth tracjectories which never violate the maximal turn rates, acceleration and jerk limits.
 
 # Conclusion
+Behavior Planning and path planning are really complex areas within the develepment of autonomous cars. The driving situation which is part of the project (highway driving) is one of the easier ones a real self-driving car has to handle. Especially in the setting with not too much traffic and rare lane changes of the other cars.
+
+The solution was kept as simple as possible while meeting all of the project requirements. 
 
 The following [video](https://youtu.be/_x-chRCk67s) shows how the car, which is controlled by the implemented path planner, manages driving on the virtual highway.
 
-Going faster and slower
-Use more complex solutions to generate trajectories (prediction)
+Based on the acutal implementation a more complex solution will be implemented because there are many points for further improvements:
+- Refactor the code
+- Include a "real" finite state machine and more complex cost funtions
+- Include the speed of the car to follow, and not only the distance how far it is away, to get a smoother ride
+- Predict how the other cars will behave in the future (next few seconds) and not only check the actual situation
+- Implementent an optimicing lane change algorithmus, which better checks on which lane the car will be able to go at the highest speed in the near future
+- Use the actual speed to adjust the safety distance necessary in front or behind the car
+- Implemented a solution to activly search for free spaces for a lane change. Brake, drive as fast as the cars on the next lane and change.
+- ...
